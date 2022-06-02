@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: pod2
+    labels:
+        app: pod2
+spec:
+    topologySpreadConstraints:
+        -   maxSkew: 2 # 描述 Pod 分布不均的程度
+            topologyKey: hello
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+                matchLabels:
+                    hello: world
+    initContainers: # 设置init容器等待myservice就绪后才会创建容器
+        - name: init-pod
+          image: busybox:latest
+          command: ['sh', '-c', "until nslookup myservice.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+    containers:
+        - name: pod2
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+          readinessProbe: #
+              tcpSocket:
+                  port: 80
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              failureThreshold: 10
+          livenessProbe:
+              tcpSocket:
+                  port: 80
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              failureThreshold: 10
+    restartPolicy: Always
+    terminationGracePeriodSeconds: 30
+    nodeSelector:
+        hello: world # 会被调度到含有此标签的节点上
