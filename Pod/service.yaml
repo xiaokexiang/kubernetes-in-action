@@ -6,6 +6,6 @@ spec:
     selector:
         app: myservice
     ports:
-        - protocol: TCP
+        -   protocol: TCP
           port: 80
-          targetPort: 9376g
+          targetPort: 9376

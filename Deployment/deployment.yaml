@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: deploy
+    namespace: helloworld
+    labels:
+        app: deploy
+spec:
+    revisionHistoryLimit: 10 # deployment最多持有多少个旧的rs，如果设置为0，所有记录都会被清空，无法进行回滚操作
+    strategy:
+        rollingUpdate:
+            maxSurge: 25% # 保证新旧pod数量不超过125%
+            maxUnavailable: 25%
+    replicas: 1
+    template:
+        metadata:
+            name: deploy
+            labels: # 用于与deployment中的selector来匹配
+                app: deploy
+        spec:
+            containers:
+                -   name: deploy
+                    image: nginx:latest
+                    imagePullPolicy: IfNotPresent
+            restartPolicy: Always
+    selector: # 定义了匹配pod的规则
+        matchExpressions: # 等同于matchLabels
+            -   key: app
+                operator: In
+                values:
+                    - deploy
