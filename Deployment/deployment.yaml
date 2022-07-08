@@ -10,7 +10,7 @@ spec:
     strategy:
         rollingUpdate:
             maxSurge: 25% # 保证新旧pod数量不超过125%
-            maxUnavailable: 25%
+            maxUnavailable: 25% # 最多25%的pod不可用
     replicas: 1
     template:
         metadata:

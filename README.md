@@ -174,3 +174,5 @@ kubectl label nodes k8s-node1 node-role.kubernetes.io/node-
 ### <a href="./Pod/README.md">Pod</a>
 
 ### <a href="./Deployment/README.md">Deployment</a>
+
+### <a href="./StatefuleSet/README.md">StatefulSet</a>

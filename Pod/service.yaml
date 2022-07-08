@@ -7,5 +7,5 @@ spec:
         app: myservice
     ports:
         -   protocol: TCP
-          port: 80
-          targetPort: 9376
+            port: 80
+            targetPort: 9376

@@ -6,11 +6,9 @@
 - [参数解析](#参数解析)
 
 ---
-
-## Deployment创建
-
 > 一个 Deployment 为 `Pod` 和 `ReplicaSet` 提供声明式的更新能力。通过ReplicaSet管理Pod的变更。
 
+## Deployment创建
 ### 命令创建
 
 ```shell
