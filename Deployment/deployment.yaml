@@ -1,31 +1,40 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: deploy
-    namespace: helloworld
-    labels:
-        app: deploy
+  name: deploy
+  namespace: helloworld
+  labels:
+    app: deploy
 spec:
-    revisionHistoryLimit: 10 # deployment最多持有多少个旧的rs，如果设置为0，所有记录都会被清空，无法进行回滚操作
-    strategy:
-        rollingUpdate:
-            maxSurge: 25% # 保证新旧pod数量不超过125%
-            maxUnavailable: 25% # 最多25%的pod不可用
-    replicas: 1
-    template:
-        metadata:
-            name: deploy
-            labels: # 用于与deployment中的selector来匹配
-                app: deploy
-        spec:
-            containers:
-                -   name: deploy
-                    image: nginx:latest
-                    imagePullPolicy: IfNotPresent
-            restartPolicy: Always
-    selector: # 定义了匹配pod的规则
-        matchExpressions: # 等同于matchLabels
-            -   key: app
-                operator: In
-                values:
-                    - deploy
+  revisionHistoryLimit: 10 # deployment最多持有多少个旧的rs，如果设置为0，所有记录都会被清空，无法进行回滚操作
+  strategy:
+    rollingUpdate:
+      maxSurge: 25% # 保证新旧pod数量不超过125%
+      maxUnavailable: 25% # 最多25%的pod不可用
+  replicas: 1
+  template:
+    metadata:
+      name: deploy
+      labels: # 用于与deployment中的selector来匹配
+        app: deploy
+    spec:
+      containers:
+        - name: deploy
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      tolerations:
+        - key: key1 # 如果node上存在taint key1=value1:NoExecute 那么pod不会被调度到此node上
+          operator: Equal # 默认为Equal,Equal需要指定value
+          effect: NoSchedule # NoExecute/NoSchedule
+          value: value1
+        - key: key2
+          operator: Equal # 如果是Exists，则不需要指定value
+          value: value2
+          effect: NoSchedule # NoExecute/NoSchedule
+  selector: # 定义了匹配pod的规则
+    matchExpressions: # 等同于matchLabels
+      - key: app
+        operator: In
+        values:
+          - deploy

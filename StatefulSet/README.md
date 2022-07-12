@@ -1,3 +1,11 @@
+- [StatefulSet 创建](#statefulset-创建)
+- [StatefuleSet创建与销毁顺序](#statefuleset创建与销毁顺序)
+- [StatefuleSet参数](#statefuleset参数)
+  - [updateStrategy](#updatestrategy)
+  - [podManagementPolicy](#podmanagementpolicy)
+
+---
+
 > 1. StatefulSet 是用来管理`有状态应用`的工作负载 API 对象。管理某些pod集合的部署和扩缩，并为这些pod提供持久存储和持久标识符。
 > 2. 每个Pod维护了一个有粘性的ID。这些Pod是基于相同的规约来创建的，但是不能相互替换：`无论怎么调度，每个Pod都有一个永久不变的ID`。
 

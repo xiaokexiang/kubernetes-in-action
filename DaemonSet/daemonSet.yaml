@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ssd-monitor
+  namespace: helloworld
+spec:
+  selector:
+    matchLabels:
+      app: ssd-monitor # 与.spec.template.metadata.labels 匹配
+  template:
+    metadata:
+      labels:
+        app: ssd-monitor # 与.spec.selector.matchLabels匹配
+    spec:
+      containers:
+        - name: main
+          image: luksa/ssd-monitor
+      nodeSelector:
+        hello: world # 调度到包含此标签的node上
+
+

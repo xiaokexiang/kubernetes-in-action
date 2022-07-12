@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ResourceQuota
 metadata:
-    name: helloworld-quota
-    namespace: helloworld
+  name: helloworld-quota
+  namespace: helloworld
 spec:
-    hard:
-        cpu: "1000"
-        memory: 2Gi
-        pods: "10"
+  hard:
+    cpu: "1000"
+    memory: 2Gi
+    pods: "10"
