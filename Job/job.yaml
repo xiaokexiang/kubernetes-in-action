@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: helloworld
+  name: pi
+spec:
+  ttlSecondsAfterFinished: 200 # 当job完成后200s就清理这个job，如果设置为0那么在成功后立马清理，如果不设置默认不清理
+  completions: 4 # 设置为0时job会被挂起
+  parallelism: 2 # 默认值为1，用于表示Job执行任务的并行数。
+  template:
+    spec:
+      containers:
+        - name: pi
+          image: perl:5.34
+          command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never # 只能设置为Never或OnFailure
+  backoffLimit: 4 

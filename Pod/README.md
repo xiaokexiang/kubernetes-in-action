@@ -7,6 +7,11 @@
   - [restartPolicy](#restartpolicy)
   - [探针](#探针)
   - [Pod拓扑分布约束](#pod拓扑分布约束)
+- [Pod的节点调度](#pod的节点调度)
+  - [nodeSelector](#nodeselector)
+  - [亲和与反亲和](#亲和与反亲和)
+  - [nodeName](#nodename)
+  - [污点与容忍度](#污点与容忍度)
 - [常用命令](#常用命令)
 
 ---
@@ -96,7 +101,7 @@ spec:
 
 ### [restartPolicy](https://kubernetes.io/zh/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy)
 
-容器的重启策略，适用域pod中的所有容器，默认值是Always
+容器的重启策略，适用于pod中的所有容器，默认值是Always
 
 - Always：只要容器不在运行状态，就会自动重启容器
 - OnFailure：只有在容器异常时才会自动重启容器（多容器需要都进入异常后，pod才会转为Failed）
