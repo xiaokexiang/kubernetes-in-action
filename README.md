@@ -1,23 +1,25 @@
 - [前置知识](#前置知识)
-    - [容器与虚拟机的区别](#容器与虚拟机的区别)
-    - [容器的隔离机制实现](#容器的隔离机制实现)
-        - [Linux命名空间](#linux命名空间)
-        - [Linux控制组](#linux控制组)
-    - [Docker](#docker)
-        - [Command](#command)
-        - [Dockerfile](#dockerfile)
-        - [Docker镜像推送](#docker镜像推送)
+  - [容器与虚拟机的区别](#容器与虚拟机的区别)
+  - [容器的隔离机制实现](#容器的隔离机制实现)
+    - [Linux命名空间](#linux命名空间)
+    - [Linux控制组](#linux控制组)
+  - [Docker](#docker)
+    - [Command](#command)
+    - [Dockerfile](#dockerfile)
+    - [Docker镜像推送](#docker镜像推送)
 - [Kubernetes](#kubernetes)
-    - [Kubernetes部署](#kubernetes部署)
-        - [基于minikube部署](#基于minikube部署)
-        - [基于kubeadm部署](#基于kubeadm部署)
-    - [Kubernetes概念](#kubernetes概念)
-        - [Master&Node](#masternode)
-        - [Kubernetes 架构图](#kubernetes-架构图)
-        - [控制平面组件](#控制平面组件)
-        - [Node组件](#node组件)
-    - [<a href="./Pod/README.md">Pod</a>](#pod)
-    - [<a href="./Deployment/README.md">Deployment</a>](#deployment)
+  - [Kubernetes部署](#kubernetes部署)
+    - [基于minikube部署](#基于minikube部署)
+    - [基于kubeadm部署](#基于kubeadm部署)
+  - [Kubernetes概念](#kubernetes概念)
+    - [Master&Node](#masternode)
+    - [Kubernetes 架构图](#kubernetes-架构图)
+    - [控制平面组件](#控制平面组件)
+    - [Node组件](#node组件)
+  - [<a href="./Pod/README.md">Pod</a>](#pod)
+  - [<a href="./Deployment/README.md">Deployment</a>](#deployment)
+  - [<a href="./StatefuleSet/README.md">StatefulSet</a>](#statefulset)
+  - [<a href="./Job/README.md">Job & CronJob</a>](#job--cronjob)
 
 ---
 
@@ -176,3 +178,5 @@ kubectl label nodes k8s-node1 node-role.kubernetes.io/node-
 ### <a href="./Deployment/README.md">Deployment</a>
 
 ### <a href="./StatefuleSet/README.md">StatefulSet</a>
+
+### <a href="./Job/README.md">Job & CronJob</a>

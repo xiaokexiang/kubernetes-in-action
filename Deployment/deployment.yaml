@@ -22,6 +22,13 @@ spec:
         - name: deploy
           image: nginx:latest
           imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
       restartPolicy: Always
       tolerations:
         - key: key1 # 如果node上存在taint key1=value1:NoExecute 那么pod不会被调度到此node上

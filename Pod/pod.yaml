@@ -32,6 +32,13 @@ spec:
         initialDelaySeconds: 5
         periodSeconds: 10
         failureThreshold: 10
+      resources:
+        limits:
+          memory: 256Mi
+          cpu: "1"
+        requests:
+          memory: 256Mi
+          cpu: "0.2"
   restartPolicy: Always
   terminationGracePeriodSeconds: 30
   nodeSelector:
