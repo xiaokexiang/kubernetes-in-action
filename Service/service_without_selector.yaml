@@ -1,0 +1,47 @@
+# 不指定selector，不会自动创建ep，需要手动创建ep
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app: my-app
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 80 # pod的容器端口
+          name: http-web-svc # 端口定义,可以被targetPort引用
+      resources:
+        limits:
+          memory: 256Mi
+          cpu: "1"
+        requests:
+          memory: 256Mi
+          cpu: "0.2"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  # selector:
+    # app: my-app # 会代理符合此标签的pod, service不设置选择标签,那么需要手动创建ep
+  ports:
+    - name: name-of-service-port
+      protocol: TCP
+      port: 8081 # svc端口
+      targetPort: http-web-svc # pod暴露的端口
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  # 这里的 name 要与 Service 的名字相同
+  name: nginx-service
+subsets:
+  - addresses:
+      - ip: 192.0.2.42 # pod的ip地址（必须合法）
+    ports:
+      - port: 80

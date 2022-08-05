@@ -41,5 +41,5 @@ curl -XGET -k https://{cluster_ip}:6443/api -H 'Authorization: Bearer ${TOKEN}'
 }
 ```
 
-### <a href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#get-read-the-specified-pod">api参考</a>
+### <a href="https://kubernetes.io/zh-cn/docs/reference/kubernetes-api/workload-resources/pod-v1/">api参考</a>
 

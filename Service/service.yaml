@@ -1,46 +1,22 @@
 apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx
-  labels:
-    app: my-app
-spec:
-  containers:
-    - name: nginx
-      image: nginx
-      ports:
-        - containerPort: 80 # pod的容器端口
-          name: http-web-svc # 端口定义,可以被targetPort引用
-      resources:
-        limits:
-          memory: 256Mi
-          cpu: "1"
-        requests:
-          memory: 256Mi
-          cpu: "0.2"
-
----
-apiVersion: v1
 kind: Service
 metadata:
   name: nginx-service
 spec:
-  # selector:
-    # app: my-app # 会代理符合此标签的pod, service不设置选择标签,那么需要手动创建ep
+  externalTrafficPolicy: Cluster # 将外部流量路由到所有继续的ep，设为Local则只会路由到当前节点上就绪的ep
+  clusterIP: 100.64.109.100 # 必须符合CIDR的范围
+  selector:
+    app: my-app # 会代理符合此标签的pod, service不设置选择标签,那么需要手动创建ep
   ports:
     - name: name-of-service-port
       protocol: TCP
-      port: 8081 # svc端口
-      targetPort: http-web-svc # pod暴露的端口
-
----
-apiVersion: v1
-kind: Endpoints
-metadata:
-  # 这里的 name 要与 Service 的名字相同
-  name: nginx-service
-subsets:
-  - addresses:
-      - ip: 192.0.2.42 # 必须是pod的ip地址
-    ports:
-      - port: 80
+      port: 8080 # svc端口
+      targetPort: 80 # pod暴露的端口
+    - name: name-of-service-port-2 # 配置多个暴露的端口
+      protocol: TCP
+      port: 8443
+      targetPort: 443
+  sessionAffinity: ClientIP # 设置pod的分发策略，将同一个客户端的请求转发到同一个pod，如果不指定那么默认是Round-Robin：轮替模式
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600 # 最大会话停留时间
