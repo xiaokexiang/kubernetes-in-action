@@ -92,11 +92,36 @@ spec:
 
 #### 环境变量
 
+当Service创建后，kubelet会自动给管理的Pod添加如下环境变量（Service创建需先于Pod）
 
-
-
+```shell
+{SERVICE_NAME}_SERVICE_HOST=${SERVICE_IP}
+{SERVICE_PORT}_SERVICE_PORT=${SERVICE_PORT}
+```
 
 #### DNS
 
+集群中的CoreDNS监控kubernetes API中的新服务，并为每个服务创建一组DNS记录，如果在整个集群中都启用了 DNS，则所有 Pod 都应该能够通过其 DNS 名称自动解析服务。
 
+若在`helloworld`namespace下存在一个名为`hello-service`的nginx服务，它通过8080端口可以访问到Pod上的80端口（简单的nginx服务），那么进入Pod容器内部，通过`curl hello-service.helloworld:8080`则可以访问到hello-serive服务。
+
+### 无头服务（headless）
+
+有时不需要或不想要负载均衡，以及单独的 Service IP。 遇到这种情况，可以通过指定 Cluster IP（`spec.clusterIP`）的值为 `"None"` 来创建 `Headless` Service。
+
+对于无头 `Services` 并不会分配 Cluster IP，`kube-proxy`不会处理它们， 而且平台也不会为它们进行负载均衡和路由。 DNS 如何实现自动配置，依赖于 Service 是否定义了选择算符。
+
+> 无头服务与普通服务的区别: 无头服务（不分配clusterIP，不会被kube-proxy处理，也不会进行负载均衡和路由）可以通过解析service的dns，得到所有Pod的地址和DNS。普通服务只能解析service的dns得到service的clusterIP。
+
+![deploy-sts](https://image.leejay.top/img/deploy-sts.png)
+
+> statefulset下的pod中，进行DNS查询会返回所有pod的地址和DNS，Pod都会有域名，可以互相访问。而deployment下的pod中则会返回service的clusterIP地址，具体访问哪个pod由iptables或者ipvs决定。
+
+### Service与Pod的DNS
+
+Kubernetes DNS除了在集群上调度DNS Pod和Service， 还配置`kubelet`以告知各个容器使用DNS Service的IP来解析DNS名称。
+
+集群中定义的每个Service（包括 DNS 服务器自身）都被赋予一个DNS名称。 默认情况下，客户端 Pod 的 DNS 搜索列表会包含Pod自身的名字空间和集群的默认域。
+
+#### Pod的dns策略
 

@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: busybox-sts-service
+    namespace: helloworld
+    labels:
+        app: busybox-sts
+spec:
+    clusterIP: None # 设置无头模式，不需要负载均衡
+    selector:
+        app:  busybox-sts
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: busybox-sts
+    namespace: helloworld
+spec:
+    selector:
+        matchLabels:
+            app:  busybox-sts # 必须匹配 .spec.template.metadata.labels
+    serviceName: "busybox-sts-service"
+    replicas: 2
+    template:
+        metadata:
+            labels:
+                app: busybox-sts # 必须匹配 .spec.selector.matchLabels
+        spec:
+            terminationGracePeriodSeconds: 10
+            containers:
+                - name: busybox
+                  image: busybox:1.28.3
+                  volumeMounts:
+                      - name: www
+                        mountPath: /root
+                  args:
+                    - /bin/sh
+                    - -c
+                    - sleep 10; touch /tmp/healthy; sleep 30000
+    volumeClaimTemplates:
+        - metadata:
+              name: www
+              namespace: helloworld
+          spec:
+              accessModes: ["ReadWriteOnce"]
+              storageClassName: "mini-nfs-storageclass"
+              resources:
+                  requests:
+                      storage: 100Mi
+

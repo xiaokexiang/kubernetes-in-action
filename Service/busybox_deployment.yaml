@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox
+  namespace: helloworld
+spec:
+  selector:
+    matchLabels:
+      app: busybox
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+      - name: busybox
+        image: busybox:1.28.3
+        args:
+        - /bin/sh
+        - -c
+        - sleep 10; touch /tmp/healthy; sleep 30000
+        resources:
+            limits:
+              memory: 256Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: busybox-service
+spec:
+  type: ClusterIP # NodePort LoadBalancer ExternalName
+  selector:
+    app: busybox # 会代理符合此标签的pod, service不设置选择标签,那么需要手动创建ep
+  ports:
+    - name: name-of-service-port
+      protocol: TCP
+      port: 8080 # svc端口
+      targetPort: 80 # pod暴露的端口
+  sessionAffinity: ClientIP # 设置pod的分发策略，将同一个客户端的请求转发到同一个pod，如果不指定那么默认是Round-Robin：轮替模式
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600 # 最大会话停留时间

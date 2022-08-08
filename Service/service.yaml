@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: nginx-service
 spec:
-  externalTrafficPolicy: Cluster # 将外部流量路由到所有继续的ep，设为Local则只会路由到当前节点上就绪的ep
+  externalTrafficPolicy: Cluster #  将外部流量路由到所有节点的ep，设为Local则只会路由到当前节点上就绪的ep，只作用于nodeport 或者 loadbalance
   clusterIP: 100.64.109.100 # 必须符合CIDR的范围
   selector:
     app: my-app # 会代理符合此标签的pod, service不设置选择标签,那么需要手动创建ep
