@@ -117,11 +117,5 @@ spec:
 
 > statefulset下的pod中，进行DNS查询会返回所有pod的地址和DNS，Pod都会有域名，可以互相访问。而deployment下的pod中则会返回service的clusterIP地址，具体访问哪个pod由iptables或者ipvs决定。
 
-### Service与Pod的DNS
 
-Kubernetes DNS除了在集群上调度DNS Pod和Service， 还配置`kubelet`以告知各个容器使用DNS Service的IP来解析DNS名称。
-
-集群中定义的每个Service（包括 DNS 服务器自身）都被赋予一个DNS名称。 默认情况下，客户端 Pod 的 DNS 搜索列表会包含Pod自身的名字空间和集群的默认域。
-
-#### Pod的dns策略
 

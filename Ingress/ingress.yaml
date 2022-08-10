@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: helloworld
+spec:
+  type: ClusterIP
+  selector:
+    app: deploy # 会代理符合此标签的pod, service不设置选择标签,那么需要手动创建ep
+  ports:
+    - name: name-of-service-port
+      protocol: TCP
+      port: 8088 # svc端口
+      targetPort: 80 # pod暴露的端口
+  sessionAffinity: ClientIP # 设置pod的分发策略，将同一个客户端的请求转发到同一个pod，如果不指定那么默认是Round-Robin：轮替模式
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600 # 最大会话停留时间
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  namespace: helloworld
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2 # 用于替换(.*) http://www.helloworld.com:31166/nginx -> nginx-service:8088/ 用于重写请求
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, PATCH, OPTIONS" # 跨域相关
+    nginx.ingress.kubernetes.io/default-backend: nginx-service # 指定默认后端
+    nginx.ingress.kubernetes.io/limit-rps: "1" # 限制一个ip每秒一次请求，超出返回503
+    nginx.ingress.kubernetes.io/server-snippet: | # 根据agent判断，若是手机端访问重定向到百度
+        set $agentflag 0;
+
+        if ($http_user_agent ~* "(Mobile)" ){
+          set $agentflag 1;
+        }
+
+        if ( $agentflag = 1 ) {
+          return 301 https://baidu.com;
+        }
+
+spec:
+  ingressClassName: nginx-example
+  rules:
+  - host: www.helloworld.com
+    http:
+      paths:
+      - path: "/nginx(/|$)(.*)"
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 8088

@@ -2,20 +2,24 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-service
+  namespace: helloworld
 spec:
-  externalTrafficPolicy: Cluster #  将外部流量路由到所有节点的ep，设为Local则只会路由到当前节点上就绪的ep，只作用于nodeport 或者 loadbalance
-  clusterIP: 100.64.109.100 # 必须符合CIDR的范围
+  # externalTrafficPolicy: Cluster #  将外部流量路由到所有节点的ep，设为Local则只会路由到当前节点上就绪的ep，只作用于nodeport 或者 loadbalance
+  # clusterIP: 100.64.109.100 # 必须符合CIDR的范围
+  type: NodePort
   selector:
-    app: my-app # 会代理符合此标签的pod, service不设置选择标签,那么需要手动创建ep
+    app: deploy # 会代理符合此标签的pod, service不设置选择标签,那么需要手动创建ep
   ports:
     - name: name-of-service-port
       protocol: TCP
-      port: 8080 # svc端口
+      port: 8088 # svc端口
       targetPort: 80 # pod暴露的端口
+      nodePort: 30088
     - name: name-of-service-port-2 # 配置多个暴露的端口
       protocol: TCP
       port: 8443
       targetPort: 443
+      nodePort: 30443
   sessionAffinity: ClientIP # 设置pod的分发策略，将同一个客户端的请求转发到同一个pod，如果不指定那么默认是Round-Robin：轮替模式
   sessionAffinityConfig:
     clientIP:
