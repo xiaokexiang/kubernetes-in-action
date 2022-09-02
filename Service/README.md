@@ -1,3 +1,16 @@
+- [kubernetes网络](#kubernetes网络)
+- [Service](#service)
+  - [Service创建](#service创建)
+  - [Service代理模式](#service代理模式)
+    - [userspace 代理模式](#userspace-代理模式)
+    - [iptables 代理模式](#iptables-代理模式)
+    - [IPVS 代理模式](#ipvs-代理模式)
+  - [服务发现](#服务发现)
+    - [环境变量](#环境变量)
+    - [DNS](#dns)
+  - [无头服务（headless）](#无头服务headless)
+
+---
 ## kubernetes网络
 
 > - 一个 Pod 中的容器之间[通过本地回路（loopback）通信](https://kubernetes.io/zh-cn/docs/concepts/services-networking/dns-pod-service/)。

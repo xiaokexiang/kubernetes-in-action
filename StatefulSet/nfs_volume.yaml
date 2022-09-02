@@ -1,4 +1,4 @@
-# nfs-client-provisioner 是一个Kubernetes的简易NFS的外部provisioner（自动配置卷程序，它使用现有的和已配置的 NFS 服务器来支持通过持久卷声明动态配置 Kubernetes 持久卷。），
+# 一种自动配置卷程序，它使用现有的NFS服务来支持通过持久卷声明动态配置 Kubernetes 持久卷。
 # 本身不提供NFS，需要现有的NFS服务器提供存储
 kind: Deployment
 apiVersion: apps/v1

@@ -1,10 +1,15 @@
+- [安装ingress-nginx-controller](#安装ingress-nginx-controller)
+- [创建ingress服务](#创建ingress服务)
+  - [TLS](#tls)
+
+---
 > [Ingress](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#ingress-v1beta1-networking-k8s-io) 公开从集群外部到集群内[服务](https://kubernetes.io/zh-cn/docs/concepts/services-networking/service/)的 HTTP 和 HTTPS 路由。 流量路由由 Ingress 资源上定义的规则控制。
 >
 > 为了让 Ingress 资源工作，集群必须有一个正在运行的 Ingress 控制器。通过目录下的ingress-nginx-controller.yaml安装[ingress-nginx](https://kubernetes.github.io/ingress-nginx/deploy/)控制器。
 
 ![微信截图_202208091ingress1](https://image.leejay.top/img/微信截图_202208091ingress1.png)
 
-### ingress-nginx-controller安装
+### 安装ingress-nginx-controller
 
 执行`kubectl apply -f ingress-nginx-controller.yaml`命令，等待ingress控制器安装，如下图所示即为成功。
 

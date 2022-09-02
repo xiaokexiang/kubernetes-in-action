@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc # pvc的名称
+  namespace: helloworld
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: "mini-nfs-storageclass" # 绑定 基于nfs-provisioner创建的storageClass
+  resources:
+    requests:
+      storage: 100Mi # 从storageclass中声明100Mi的存储空间
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-volume
+  namespace: helloworld
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: nfs-volume
+  template:
+    metadata:
+      labels:
+        role: nfs-volume
+    spec:
+      containers:
+        - name: nfs-volume
+          image: nginx
+          ports:
+            - name: nfs
+              containerPort: 80
+          volumeMounts:
+            - mountPath: /www/
+              name: mypvc
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: "0.5"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+      volumes:
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: nfs-pvc # 指定基于nfs创建的pvc的名称

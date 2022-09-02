@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-nginx-subpath
+  namespace: helloworld
+  labels:
+    name: my-nginx-subpath
+spec:
+  containers:
+  - name: my-nginx-subpath
+    image: nginx
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    ports:
+      - containerPort: 80
+    volumeMounts:
+      - mountPath: /var/www/html
+        name: nginx-mount
+        subPath: html
+  volumes:
+    - name: nginx-mount
+      persistentVolumeClaim:
+        claimName: my-pvc

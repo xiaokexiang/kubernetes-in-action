@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv
+  namespace: helloworld
+spec:
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce # 卷可以被一个节点以读写方式挂载
+  persistentVolumeReclaimPolicy: Delete
+  volumeMode: Filesystem
+  # hostPath:
+  #   path: /root/helloworld # 绑定本地文件或目录
+  claimRef: # 绑定pvc
+    name: my-pvc
+    namespace: helloworld
+  storageClassName: mini-nfs-storageclass
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /opt/share
+    server: 10.50.8.38
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  resources:
+    requests:
+      storage: 100Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  volumeName: my-pv
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  namespace: helloworld
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+      - mountPath: "/var/www/html"
+        name: nginx
+      resources:
+        limits:
+          memory: 256Mi
+          cpu: "1"
+        requests:
+          memory: 256Mi
+          cpu: "0.2"
+  volumes:
+    - name: nginx
+      persistentVolumeClaim:
+        claimName: my-pvc # pod通过pvc来挂载存储
