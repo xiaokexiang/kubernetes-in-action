@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${RoleName}
+  namespace: ${namespace}
+rules:
+  - apiGroups: [ "","extensions","apps" ] # 规定coreApi组
+    resources: [ "configmaps","pods", "services", "endpoints", "secrets" ] # 规定能访问的资源类型
+    verbs: [ "get","list","watch" ] # 规定能进行的操作

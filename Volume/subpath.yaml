@@ -1,14 +1,28 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: helloworld
+immutable: false # true表示配置文件不可修改,只能删除重建
+data:
+  "hello": "world" # 保存为u8编码的文件
+  "hello.properties": |- # 管道符表示绑定多行文本
+    hello=world
+    a=b
+binaryData:
+  "hello2": SGVsbG8gd29ybGQhCg== #　base64编码后的二进制数据，key不能与data中的相同
+---
+apiVersion: v1
 kind: Pod
 metadata:
-  name: my-nginx-subpath
+  name: my-nginx-subpath1
   namespace: helloworld
   labels:
     name: my-nginx-subpath
 spec:
   containers:
   - name: my-nginx-subpath
-    image: nginx
+    image: abcsys.cn:5000/public/nginx
     resources:
       limits:
         memory: "128Mi"
@@ -16,10 +30,76 @@ spec:
     ports:
       - containerPort: 80
     volumeMounts:
-      - mountPath: /var/www/html
+      - mountPath: /var/log/nginx/hello.properties
         name: nginx-mount
-        subPath: html
+        subPath: hello.properties # 挂载hello.properties到容器内，与原有内容并存，否则会覆盖
   volumes:
     - name: nginx-mount
+      configMap:
+        name: test-configmap
+        items:
+          - key: "hello.properties"
+            path: "hello.properties"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-nginx-subpath2
+  namespace: helloworld
+  labels:
+    name: my-nginx-subpath
+spec:
+  containers:
+    - name: my-nginx-subpath
+      image: abcsys.cn:5000/public/nginx
+      resources:
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+      ports:
+        - containerPort: 80
+      volumeMounts:
+        - mountPath: /var/log/nginx
+          name: mount
+          subPath: nginx
+    - name: alpine
+      image: abcsys.cn:5000/public/alpine
+      command:
+        - "/bin/sh"
+        - "-c"
+        - "sleep 3600"
+      volumeMounts:
+        - mountPath: /etc/ssl
+          name: mount
+          subPath: ssl
+  volumes:
+    - name: mount
       persistentVolumeClaim:
         claimName: my-pvc
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-nginx-subpath3
+  namespace: helloworld
+  labels:
+    name: my-nginx-subpath
+spec:
+  containers:
+    - name: my-nginx-subpath
+      image: abcsys.cn:5000/public/alpine
+      command: [ "sh", "-c", "while [ true ]; do echo 'Hello'; sleep 10; done | tee -a /logs/hello.txt" ]
+      env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+      volumeMounts:
+        - mountPath: /logs
+          name: mount
+          subPathExpr: $(POD_NAME) # 支持环境变量
+  volumes:
+    - name: mount
+      hostPath:
+        path: /var/log/pods

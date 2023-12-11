@@ -1,0 +1,71 @@
+# 保存数据大小不能超过１MiB
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: helloworld
+immutable: false # true表示配置文件不可修改,只能删除重建
+data:
+  "hello": "world" # 保存为u8编码的文件
+  "hello.properties": |- # 管道符表示绑定多行文本
+    hello=world
+    a=b
+binaryData:
+  "hello2": SGVsbG8gd29ybGQhCg== #　base64编码后的二进制数据，key不能与data中的相同
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-config
+  namespace: helloworld
+  labels:
+    app: test-config
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-config
+  template:
+    metadata:
+      name: test-config
+      labels:
+        app: test-config
+    spec:
+      containers:
+        - name: test-config
+          image: abcsys.cn:5000/public/alpine
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "sleep 3600"
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 32Mi
+            limits:
+              cpu: 1000m
+              memory: 64Mi
+          env:
+            - name: config-from-configmap
+              valueFrom:
+                configMapKeyRef:
+                  name: test-configmap # configmap name
+                  key: hello # 变更不会通知到pod
+          volumeMounts: # 挂载的方式绑定configmap
+            - name: mount-from-config
+              mountPath: /config
+              readOnly: true
+            - name: binary-data
+              mountPath: /config/binary-data
+      volumes:
+        - name: mount-from-config
+          configMap:
+            name: test-configmap
+            items: # 下述会被创建为文件,且变更的时候会通知到pod
+              - key: "hello.properties"
+                path: "hello.properties"
+        - name: binary-data
+          configMap:
+            name: test-configmap # configmap中的每一个key都做为一个单独的文件绑定到/config/binary-data目录下
+      restartPolicy: Always

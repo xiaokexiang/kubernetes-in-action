@@ -1,0 +1,8 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: secret-reader # 不需要定义namespace，不受限
+rules:
+  - apiGroups: [""] # 规定coreApi组
+    resources: ["secrets"] # 规定能访问的资源类型
+    verbs: ["get", "watch", "list"] # 规定能进行的操作

@@ -242,18 +242,222 @@ spec:
 ```
 
 #### configMap
+configMap用于存储非敏感的数据，比如配置文件，环境变量等。
 
-
+```yaml
+# 保存数据大小不能超过１MiB
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: helloworld
+immutable: false # true表示配置文件不可修改,只能删除重建
+data:
+  "hello": "world" # 保存为u8编码的文件
+  "hello.properties": |- # 管道符表示绑定多行文本
+    hello=world
+    a=b
+binaryData:
+  "hello2": SGVsbG8gd29ybGQhCg== #　base64编码后的二进制数据，key不能与data中的相同
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-config
+  namespace: helloworld
+  labels:
+    app: test-config
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-config
+  template:
+    metadata:
+      name: test-config
+      labels:
+        app: test-config
+    spec:
+      containers:
+        - name: test-config
+          image: abcsys.cn:5000/public/alpine
+          command:
+            - sleep
+            - "3600"
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 32Mi
+            limits:
+              cpu: 1000m
+              memory: 64Mi
+          env:
+            - name: config-from-configmap
+              valueFrom:
+                configMapKeyRef:
+                  name: test-configmap # configmap name
+                  key: hello # 变更不会通知到pod
+          volumeMounts: # 挂载的方式绑定configmap
+            - mountPath: /config
+              name: mount-from-config
+              readOnly: true
+            - name: binary-data
+              mountPath: /config/binary-data
+      volumes:
+        - name: mount-from-config
+          configMap:
+            name: test-configmap
+            items: # 下述会被创建为文件,且变更的时候会通知到pod
+              - key: "hello.properties"
+                path: "hello.properties"
+        - name: binary-data
+          configMap:
+            name: test-configmap # configmap中的每一个key都做为一个单独的文件绑定到/config/binary-data目录下
+      restartPolicy: Always  
+```
+> 1. configMap中的value作为环境变量时，他的改动不会通知到pod.
+> 2. configMap中的value使用volumeMounts挂载文件的形式绑定，改动则会通知pod(subPath除外)．
 
 #### secret
+secret用于存储敏感数据，并使用base64编码．
 
-
-
-
+```yaml
+# 保存数据大小不能超过１MiB
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: helloworld
+type: Opaque # 用户定义的任意数据，不传默认为Opaque
+immutable: true
+data:
+  "hello": d29ybGQ=
+stringData: # 表示明文存储
+  "hello2": "world2"
+---
+# kubectl create secret docker-registry/tls ${secret_name} --cert=${cert_path} --key=${key_path}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret2
+  namespace: helloworld
+type: kubernetes.io/dockerconfigjson # 访问镜像仓库的凭证
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJhdXRoIjoicGFzc3dvcmQifX0=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-config
+  namespace: helloworld
+  labels:
+    app: test-config
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-config
+  template:
+    metadata:
+      name: test-config
+      labels:
+        app: test-config
+    spec:
+      containers:
+        - name: test-config
+          image: abcsys.cn:5000/public/alpine
+          command:
+            - sleep
+            - "3600"
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 32Mi
+            limits:
+              cpu: 1000m
+              memory: 64Mi
+          env:
+            - name: config-from-secret
+              valueFrom:
+                secretKeyRef:
+                  name: test-secret
+                  key: hello
+          volumeMounts: # 挂载的方式绑定configmap
+            - name: secret-volume
+              mountPath: /config/secret
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: test-secret
+            items:
+              - key: "hello"
+                path: "hello.secret"
+      restartPolicy: Always
+```
+> 1. 挂载到pod的value会在自动被解密为明文．
 
 #### subPath
+单个pod中一个共享卷供多个容器挂载使用，subPath属性可用于指定所引用的卷内的子路径，而不是根路径．主要用于`一个卷挂载多个路径或挂载特定目录的特定路径，并希望容器内原有目录不被覆盖`
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-nginx-subpath1
+  namespace: helloworld
+  labels:
+    name: my-nginx-subpath
+spec:
+  containers:
+  - name: my-nginx-subpath
+    image: abcsys.cn:5000/public/nginx
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    ports:
+      - containerPort: 80
+    volumeMounts:
+      - mountPath: /var/log/nginx/hello.properties
+        name: nginx-mount
+        subPath: hello.properties # 挂载hello.properties到容器内，与原有内容并存，否则会覆盖
+  volumes:
+    - name: nginx-mount
+      configMap:
+        name: test-configmap
+        items:
+          - key: "hello.properties"
+            path: "hello.properties"
+```
+### subPathExpr
+使用subPathExpr字段可以基于`Downward api`环境变量实现构造subPath目录名，与subPath是互斥的
 
-用于在单个pod中共享存储卷的多个子路径，而不是根路径。
-
-
-
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-nginx-subpath3
+  namespace: helloworld
+  labels:
+    name: my-nginx-subpath
+spec:
+  containers:
+    - name: my-nginx-subpath
+      image: abcsys.cn:5000/public/alpine
+      command: [ "sh", "-c", "while [ true ]; do echo 'Hello'; sleep 10; done | tee -a /logs/hello.txt" ]
+      env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+      volumeMounts:
+        - mountPath: /logs
+          name: mount
+          subPathExpr: $(POD_NAME) # 支持环境变量
+  volumes:
+    - name: mount
+      hostPath:
+        path: /var/log/pods
+```
